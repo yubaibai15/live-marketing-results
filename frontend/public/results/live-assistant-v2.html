@@ -1,1 +1,2376 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>直播助手</title></head><body><main></main><script src="/results/result-view.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A企业直播脚本撰写Agent</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary: #6366F1;
+  --primary-light: #EEF2FF;
+  --primary-hover: #4F46E5;
+  --bg: #F8F9FB;
+  --card: #FFFFFF;
+  --border: #E5E7EB;
+  --border-light: #F3F4F6;
+  --text: #1F2937;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --nav-width: 80px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #F8F9FA;
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ============ 左侧主导航 ============ */
+.main-nav {
+  width: var(--nav-width);
+  background: #fff;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  gap: 4px;
+  flex-shrink: 0;
+  z-index: 10;
+  overflow-y: auto;
+}
+
+.nav-item {
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 12px;
+  transition: all 0.15s;
+  position: relative;
+}
+.nav-item svg { width: 22px; height: 22px; }
+.nav-item:hover { color: var(--text); }
+.nav-item.active {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: -8px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 24px; background: var(--primary); border-radius: 0 3px 3px 0;
+}
+
+/* ============ 主内容区 ============ */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ============ 顶部标题栏 ============ */
+.top-header {
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  flex-shrink: 0;
+  gap: 20px;
+}
+
+.agent-info {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.agent-info .avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 13px; font-weight: 600;
+}
+.agent-info .name {
+  font-size: 14px; font-weight: 600;
+  color: var(--text);
+}
+
+.header-tabs {
+  display: flex; gap: 0;
+  flex-shrink: 0;
+  margin-left: 40px;
+}
+.header-tabs .tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s;
+  border: none;
+  background: none;
+}
+.header-tabs .tab:hover { color: var(--text); background: #F3F4F6; }
+.header-tabs .tab.active {
+  color: var(--primary);
+  background: var(--primary-light);
+  font-weight: 500;
+}
+
+.share-btn {
+  margin-left: auto;
+  background: var(--primary); color: #fff;
+  border: none; padding: 6px 18px;
+  border-radius: 6px; font-size: 13px;
+  cursor: pointer; font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.share-btn:hover { background: var(--primary-hover); }
+
+/* ============ 内容面板 ============ */
+.content-panel {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* 左侧内容区 */
+.page-left {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-left .page-title {
+  padding: 16px 24px;
+  font-size: 16px; font-weight: 500;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.page-left .page-body {
+  padding: 0 24px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ============ 右侧预览区 ============ */
+.preview-panel {
+  width: 420px;
+  min-width: 420px;
+  background: #F9FAFB;
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.preview-header {
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text);
+  background: #fff;
+  flex-shrink: 0;
+}
+.preview-header .icons {
+  display: flex; gap: 8px; color: var(--text-muted);
+}
+.preview-header .icons svg {
+  width: 18px; height: 18px; cursor: pointer; transition: color 0.15s;
+}
+.preview-header .icons svg:hover { color: var(--text); }
+
+.preview-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.preview-input-wrap {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+  flex-shrink: 0;
+}
+.generate-script-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%;
+  padding: 9px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #818CF8, #6366F1);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.25);
+}
+.generate-script-btn:hover {
+  background: linear-gradient(135deg, #6366F1, #4F46E5);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+}
+.generate-script-btn:disabled {
+  opacity: 0.5; cursor: not-allowed;
+}
+.preview-input-box {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 8px 16px;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+.preview-input-box:hover { border-color: var(--primary); }
+.preview-input-box input {
+  flex: 1;
+  border: none; outline: none;
+  font-size: 13px; color: var(--text);
+  font-family: inherit;
+  background: transparent;
+}
+.preview-input-box input::placeholder { color: var(--text-muted); }
+.preview-input-box .input-icons {
+  display: flex; gap: 8px; color: var(--text-muted); align-items: center;
+}
+.preview-input-box .input-icons svg {
+  width: 18px; height: 18px; cursor: pointer; transition: color 0.15s;
+}
+.preview-input-box .input-icons svg:hover { color: var(--text); }
+.preview-input-box .send-btn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.preview-input-box .send-btn:hover { background: var(--primary-hover); }
+
+/* ============ 聊天消息 ============ */
+.chat-msg {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+  animation: chat-in 0.3s ease;
+}
+@keyframes chat-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.chat-msg.user { flex-direction: row-reverse; }
+.chat-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #fff;
+}
+.chat-avatar.ai {
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+}
+.chat-avatar.user-avatar {
+  background: linear-gradient(135deg, #10B981, #059669);
+}
+.chat-bubble {
+  max-width: 80%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.chat-msg.ai .chat-bubble {
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-top-left-radius: 2px;
+}
+.chat-msg.user .chat-bubble {
+  background: var(--primary);
+  color: #fff;
+  border-top-right-radius: 2px;
+}
+.chat-bubble.typing {
+  display: inline-flex;
+  gap: 3px;
+  padding: 12px 14px;
+}
+.chat-bubble.typing span {
+  width: 6px; height: 6px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  animation: typing-bounce 1.2s infinite;
+}
+.chat-bubble.typing span:nth-child(2) { animation-delay: 0.15s; }
+.chat-bubble.typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+.chat-welcome {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.chat-welcome .welcome-icon {
+  width: 48px; height: 48px;
+  margin: 0 auto 12px;
+  background: var(--primary-light);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+}
+.chat-welcome .welcome-icon svg { width: 26px; height: 26px; }
+.chat-welcome h4 {
+  font-size: 14px; color: var(--text);
+  font-weight: 500; margin-bottom: 4px;
+}
+
+/* ============ 脚本输出卡片 ============ */
+.chat-script-card {
+  max-width: 95%;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  animation: chat-in 0.4s ease;
+}
+.chat-script-card .script-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.chat-script-card .script-card-header svg { width: 16px; height: 16px; }
+.chat-script-card .script-card-body {
+  padding: 14px 16px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--text);
+  max-height: 500px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.chat-script-card .script-card-body h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 12px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-light);
+}
+.chat-script-card .script-card-body h3:first-child { margin-top: 0; }
+.chat-script-card .script-card-body .script-phase {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+.chat-script-card .script-card-body .script-highlight {
+  color: var(--primary);
+  font-weight: 600;
+}
+.chat-script-card .script-card-footer {
+  padding: 8px 14px;
+  border-top: 1px solid var(--border-light);
+  background: #FAFAFB;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.chat-script-card .script-card-footer button {
+  padding: 5px 14px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.chat-script-card .script-card-footer .btn-copy {
+  background: var(--primary);
+  color: #fff;
+}
+.chat-script-card .script-card-footer .btn-copy:hover { background: var(--primary-hover); }
+.chat-script-card .script-card-footer .btn-export {
+  background: #F3F4F6;
+  color: var(--text-secondary);
+}
+.chat-script-card .script-card-footer .btn-export:hover { background: #E4E6EA; }
+
+/* ============ 页面通用 ============ */
+.page { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.page.active { display: flex; }
+
+/* ============ 知识页面 ============ */
+.kb-section {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 8px 0;
+}
+
+.kb-type-card {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.kb-type-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+}
+
+.kb-type-card .kb-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: #EEF2FF;
+  color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.kb-type-card .kb-info { flex: 1; min-width: 0; }
+.kb-type-card .kb-info .title-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.kb-type-card .kb-info h4 {
+  font-size: 14px; font-weight: 600; color: var(--text);
+}
+.kb-type-card .kb-info .badge-new {
+  font-size: 10px; padding: 1px 6px; border-radius: 4px;
+  background: #FEE2E2; color: #DC2626; font-weight: 500;
+}
+.kb-type-card .kb-info p {
+  font-size: 12px; color: var(--text-secondary); line-height: 1.5;
+}
+
+.kb-type-card .add-btn {
+  margin-left: auto;
+  align-self: center;
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px; cursor: pointer; font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.15s; flex-shrink: 0;
+  display: flex; align-items: center; gap: 4px;
+}
+.kb-type-card .add-btn:hover { background: var(--primary-hover); }
+
+/* ============ 空状态 ============ */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 20px;
+  min-height: 400px;
+}
+.empty-illustration {
+  width: 120px; height: 100px;
+  position: relative;
+}
+.empty-illustration svg {
+  width: 100%; height: 100%;
+  filter: drop-shadow(0 4px 12px rgba(99,102,241,0.2));
+}
+.empty-text {
+  font-size: 13px; color: var(--text-muted); text-align: center;
+}
+.empty-action-btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px; cursor: pointer; font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
+  transition: background 0.15s;
+}
+.empty-action-btn:hover { background: var(--primary-hover); }
+
+/* ============ 弹窗 ============ */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 100;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: 480px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+.modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.modal .form-group { margin-bottom: 14px; }
+.modal .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+.modal .form-group input,
+.modal .form-group textarea {
+  width: 100%;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 12px; font-size: 13px; font-family: inherit;
+  outline: none; transition: border 0.15s;
+}
+.modal .form-group input:focus,
+.modal .form-group textarea:focus { border-color: var(--primary); }
+.modal .modal-actions {
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;
+}
+.modal .modal-actions button {
+  padding: 8px 20px; border-radius: 6px; font-size: 13px; cursor: pointer;
+  border: 1px solid var(--border); background: #fff; color: var(--text);
+}
+.modal .modal-actions button.confirm {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+
+/* ============ 规则页面 ============ */
+.rule-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: #fff;
+}
+.rule-toolbar .page-title-inline {
+  font-size: 16px; font-weight: 500; color: var(--text);
+}
+.toolbar-right {
+  display: flex; align-items: center; gap: 12px;
+}
+.toolbar-label {
+  font-size: 13px; color: var(--text);
+}
+.model-selector {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.model-selector:hover { border-color: var(--primary); }
+.model-selector .model-icon {
+  width: 14px; height: 14px; color: var(--primary);
+}
+.model-selector .chev-icon {
+  width: 12px; height: 12px; color: var(--text-muted);
+}
+
+/* iOS-style switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.switch input { display: none; }
+.slider {
+  position: absolute; inset: 0;
+  background: #D1D5DB;
+  border-radius: 9px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.slider::before {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  left: 2px; top: 2px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.switch input:checked + .slider { background: var(--primary); }
+.switch input:checked + .slider::before { transform: translateX(14px); }
+
+/* 规则卡片 */
+.rule-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.rule-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.rule-card-title {
+  font-size: 14px; font-weight: 500; color: var(--text);
+}
+.rule-card-actions {
+  display: flex; align-items: center; gap: 4px;
+}
+.icon-btn {
+  width: 24px; height: 24px;
+  border-radius: 4px;
+  border: none; background: transparent;
+  color: var(--text-muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.icon-btn:hover { background: #F3F4F6; color: var(--text); }
+.icon-btn svg { width: 14px; height: 14px; }
+.optimize-btn {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.optimize-btn:hover { background: var(--primary-light); }
+.optimize-btn svg { width: 12px; height: 12px; }
+
+.role-fields { padding: 0; }
+.role-field {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.role-field:hover { background: #FAFAFB; }
+.role-field:last-child { border-bottom: none; }
+.field-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.field-name {
+  font-size: 13px; font-weight: 500; color: var(--text);
+}
+.field-actions {
+  display: flex; align-items: center; gap: 8px;
+}
+.field-insert-btn {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 500;
+}
+.field-insert-btn:hover { background: var(--primary-light); }
+.field-tag {
+  font-size: 10px;
+  padding: 1px 5px;
+  background: #F3F4F6;
+  color: var(--text-muted);
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+.field-weight {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.field-content {
+  width: 100%;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+  font-family: inherit;
+  border: 1px solid #E0E3E8;
+  background: #FFFFFF;
+  border-radius: 6px;
+  padding: 8px 12px;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  min-height: 34px;
+  transition: all 0.15s;
+  display: block;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.field-content:hover { border-color: #C1C7D0; }
+.field-content:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+.field-content::placeholder { color: #B0B5C3; }
+
+.add-theme-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: calc(100% - 32px);
+  margin: 12px 16px;
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.add-theme-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Toggle rows */
+.rule-toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text);
+}
+.rule-toggle-row .label {
+  display: flex; align-items: center; gap: 6px;
+}
+.rule-toggle-row .info-icon {
+  width: 14px; height: 14px;
+  color: var(--text-muted);
+  cursor: help;
+}
+.dropdown-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.dropdown-btn:hover { border-color: var(--primary); }
+.dropdown-btn svg { width: 10px; height: 10px; }
+.add-mini-btn {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.add-mini-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+.save-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #818CF8, #6366F1);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: all 0.15s;
+}
+.save-btn:hover { background: linear-gradient(135deg, #6366F1, #4F46E5); }
+
+/* ============ Skills 页面 ============ */
+.skill-page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: #fff;
+}
+.skill-page-header .skill-title-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.skill-page-header .skill-title-row .title {
+  font-size: 16px; font-weight: 500; color: var(--text);
+}
+.skill-page-header .skill-count-badge {
+  font-size: 12px; font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.skill-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px 80px;
+}
+
+.skill-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* 搜索栏 */
+.skill-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.skill-search-box {
+  flex: 1;
+  position: relative;
+}
+.skill-search-box input {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.skill-search-box input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+.skill-search-box .search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.skill-select-all-btn {
+  padding: 7px 14px;
+  font-size: 13px;
+  color: var(--primary);
+  background: var(--primary-light);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+.skill-select-all-btn:hover { background: #E0E7FF; }
+
+/* 分类标签 */
+.skill-cat-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.skill-cat-tab {
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: #F3F4F6;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+.skill-cat-tab:hover { color: var(--text); }
+.skill-cat-tab.active {
+  color: var(--primary);
+  background: var(--primary-light);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+/* 已选标签 */
+.skill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 14px;
+  min-height: 0;
+}
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 10px;
+  font-size: 12px;
+  color: var(--primary-hover);
+  background: var(--primary-light);
+  border-radius: 16px;
+  animation: chipIn 0.2s ease;
+}
+.skill-chip .chip-close {
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: color 0.15s;
+  line-height: 1;
+}
+.skill-chip .chip-close:hover { color: var(--primary); }
+@keyframes chipIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 技能分组 */
+.skill-group {
+  margin-bottom: 22px;
+}
+.skill-group-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.skill-group-title .group-icon { font-size: 16px; }
+.skill-group-title .group-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* 技能网格 */
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* 技能卡片 */
+.skill-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  user-select: none;
+}
+.skill-item:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+.skill-item.checked {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* 复选框 */
+.skill-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #D1D5DB;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  background: #fff;
+}
+.skill-item:hover .skill-checkbox { border-color: var(--primary); }
+.skill-item.checked .skill-checkbox {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.skill-checkbox svg {
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.skill-item.checked .skill-checkbox svg { opacity: 1; }
+
+/* 技能图标 */
+.skill-emoji {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F3F4F6;
+  border-radius: 6px;
+}
+.skill-item.checked .skill-emoji {
+  background: rgba(99,102,241,0.15);
+}
+
+/* 技能信息 */
+.skill-info {
+  flex: 1;
+  min-width: 0;
+}
+.skill-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skill-item.checked .skill-name { color: var(--primary-hover); }
+.skill-desc-mini {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* 底部操作栏 */
+.skill-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+  z-index: 50;
+}
+.skill-selected-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.skill-selected-info strong {
+  color: var(--primary);
+  font-size: 15px;
+}
+.skill-bottom-actions {
+  display: flex;
+  gap: 8px;
+}
+.skill-btn {
+  padding: 7px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+.skill-btn-cancel {
+  background: #F3F4F6;
+  color: var(--text-secondary);
+}
+.skill-btn-cancel:hover { background: #E4E6EA; }
+.skill-btn-confirm {
+  background: var(--primary);
+  color: #fff;
+}
+.skill-btn-confirm:hover { background: var(--primary-hover); }
+.skill-btn-confirm:disabled {
+  background: #C7D2FE;
+  cursor: not-allowed;
+}
+
+/* 空搜索结果 */
+.skill-empty-search {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+  display: none;
+}
+.skill-empty-search .icon { font-size: 40px; margin-bottom: 8px; }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* ============ 直播助手功能配置 页面 ============ */
+.live-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: #fff;
+}
+.live-header .live-title-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.live-header .live-title-row .title {
+  font-size: 16px; font-weight: 600; color: var(--text);
+}
+.live-header .live-badge {
+  font-size: 12px; font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+.live-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px 24px;
+}
+.live-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.live-view-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+  border-bottom: 2px solid var(--border-light);
+}
+.live-view-tab {
+  padding: 8px 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-weight: 500;
+  position: relative;
+  transition: all 0.15s;
+}
+.live-view-tab:hover { color: var(--text); }
+.live-view-tab.active {
+  color: var(--primary);
+  font-weight: 600;
+}
+.live-view-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px 2px 0 0;
+}
+.live-iframe-wrap {
+  display: none;
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #F8F9FB;
+}
+.live-iframe-wrap.active { display: block; }
+.live-iframe-wrap iframe {
+  width: 100%;
+  height: 1400px;
+  border: none;
+  display: block;
+}
+</style>
+<script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
+<script>
+(function(){
+  try{
+    var beacon=new BeaconAction({
+      appkey:'0WEB06U85YBSLJNL',
+      versionCode:'1.0.0',
+      channelID:'share',
+      delay:1000,
+      sessionDuration:30*60*1000,
+      isOversea:false,
+      needReportRqdEvent:false
+    });
+    beacon.onDirectUserAction('preview_page_view',{
+      'url':location.href,
+      'referrer':document.referrer,
+      'title':document.title,
+      'sandbox_id':'11cca74a0eff4d87acf325b88ce98458'
+    });
+  }catch(e){}
+})();
+</script></head>
+<body>
+
+<!-- ===== 左侧主导航 ===== -->
+<nav class="main-nav">
+  <div class="nav-item" data-page="rule">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="4" y1="6" x2="20" y2="6"/>
+      <circle cx="9" cy="6" r="2" fill="currentColor"/>
+      <line x1="4" y1="12" x2="20" y2="12"/>
+      <circle cx="15" cy="12" r="2" fill="currentColor"/>
+      <line x1="4" y1="18" x2="20" y2="18"/>
+      <circle cx="11" cy="18" r="2" fill="currentColor"/>
+    </svg>
+    <span>规则</span>
+  </div>
+
+  <div class="nav-item" data-page="knowledge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+    </svg>
+    <span>知识</span>
+  </div>
+
+  <div class="nav-item" data-page="skill">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="6" r="3"/>
+      <path d="M12 9v6"/>
+      <path d="M10 15l-2 5"/>
+      <path d="M14 15l2 5"/>
+    </svg>
+    <span>直播助手</span>
+  </div>
+
+  <div class="nav-item" data-page="workflow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="8" y="14" width="7" height="7" rx="1"/>
+      <line x1="6.5" y1="10" x2="6.5" y2="14"/>
+      <line x1="17.5" y1="10" x2="17.5" y2="14"/>
+    </svg>
+    <span>工作流</span>
+  </div>
+</nav>
+
+<!-- ===== 主内容区 ===== -->
+<div class="main-content">
+  <!-- 顶部标题栏 -->
+  <div class="top-header">
+    <div class="agent-info">
+      <div class="avatar">A</div>
+      <span class="name">A企业直播脚本撰写Agent</span>
+    </div>
+    <div class="header-tabs">
+      <button class="tab active" data-tab="edit">编辑</button>
+      <button class="tab" data-tab="logs">日志</button>
+      <button class="tab" data-tab="publish">发布</button>
+      <button class="tab" data-tab="analysis">分析</button>
+      <button class="tab" data-tab="observe">效果观测</button>
+    </div>
+    <button class="share-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      分享
+    </button>
+  </div>
+
+  <!-- 内容面板 -->
+  <div class="content-panel">
+    <!-- 左侧页面内容 -->
+    <div class="page-left" id="page-left">
+
+      <!-- ===== 规则页面 ===== -->
+      <div class="page active" id="page-rule">
+        <div class="rule-toolbar">
+          <div class="page-title-inline">规则</div>
+          <div class="toolbar-right">
+            <span class="toolbar-label">自由模式</span>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+            <button class="model-selector">
+              <svg class="model-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/>
+              </svg>
+              DeepSeek-R1
+              <svg class="chev-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="page-body">
+
+          <!-- 角色设定卡片 -->
+          <div class="rule-card">
+            <div class="rule-card-header">
+              <div class="rule-card-title">角色设定</div>
+              <div class="rule-card-actions">
+                <button class="icon-btn" title="刷新">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" title="排序">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="15" y2="12"/>
+                    <line x1="3" y1="18" x2="9" y2="18"/>
+                  </svg>
+                </button>
+                <button class="optimize-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/>
+                  </svg>
+                  优化
+                </button>
+              </div>
+            </div>
+
+            <div class="role-fields">
+              <!-- 角色 -->
+              <div class="role-field">
+                <div class="field-row">
+                  <span class="field-name">角色</span>
+                  <div class="field-actions">
+                    <span class="field-tag">Tab</span>
+                    <span class="field-weight">权重 0.6</span>
+                    <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+                  </div>
+                </div>
+                <textarea class="field-content" id="role-text" rows="1" placeholder="请输入角色...">A企业直播脚本撰写Agent，专注为 TikTok 巴西市场生成专业葡萄牙语直播脚本，覆盖开场、车型讲解、互动、逼单全流程。</textarea>
+              </div>
+
+              <!-- 背景 -->
+              <div class="role-field">
+                <div class="field-row">
+                  <span class="field-name">背景</span>
+                  <div class="field-actions">
+                    <span class="field-tag">Tab</span>
+                    <span class="field-weight">权重 0.6</span>
+                    <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+                  </div>
+                </div>
+                <textarea class="field-content" id="bg-text" rows="1" placeholder="请输入背景...">BYD 品牌进入巴西市场三年，本次直播为"三年同行、绿动巴西"主题周年庆活动。采用 XR 全息直播形式，面向25-45岁巴西家庭用户，主推海鸥、宋PLUS DM-i、汉EV三款车型。</textarea>
+              </div>
+
+              <!-- 任务 -->
+              <div class="role-field">
+                <div class="field-row">
+                  <span class="field-name">任务</span>
+                  <div class="field-actions">
+                    <span class="field-tag">Tab</span>
+                    <span class="field-weight">权重 0.6</span>
+                    <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+                  </div>
+                </div>
+                <textarea class="field-content" id="task-text" rows="1" placeholder="请输入任务...">根据用户提供的直播需求（平台、时间、主题、目标受众、主推产品、语言等），生成完整的直播脚本，包含开场暖场、车型讲解、互动环节、逼单转化、收官总结等全流程话术，并融入XR全息直播场景描述。</textarea>
+              </div>
+
+              <!-- 需求 -->
+              <div class="role-field">
+                <div class="field-row">
+                  <span class="field-name">需求</span>
+                  <div class="field-actions">
+                    <span class="field-tag">Tab</span>
+                    <span class="field-weight">权重 0.6</span>
+                    <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+                  </div>
+                </div>
+                <textarea class="field-content" id="req-text" rows="1" placeholder="请输入需求...">1. 脚本语言为葡萄牙语（PT-BR），话术需本地化适配巴西市场文化习惯\n2. 每款车型讲解时长约40分钟，穿插互动环节\n3. 包含XR全息直播场景切换描述\n4. 逼单环节需设置紧迫感和限时优惠\n5. 目标观看2000+，有效线索100+\n6. 覆盖合规自查：价格标注、金融方案、隐私条款等</textarea>
+              </div>
+
+              <!-- 输出格式 -->
+              <div class="role-field">
+                <div class="field-row">
+                  <span class="field-name">输出格式</span>
+                  <div class="field-actions">
+                    <span class="field-tag">Tab</span>
+                    <span class="field-weight">权重 0.6</span>
+                    <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+                  </div>
+                </div>
+                <textarea class="field-content" id="output-text" rows="1" placeholder="请输入输出格式...">按直播流程分章节输出，每章节包含：时间节点、XR场景描述、主播话术（葡语）、卖点展示要点、互动引导话术、逼单策略。末尾附合规自查清单。</textarea>
+              </div>
+            </div>
+
+            <button class="add-theme-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              添加主题
+            </button>
+          </div>
+
+          <!-- 开关行 -->
+          <div class="rule-toggle-row">
+            <span>开始白</span>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="rule-toggle-row">
+            <span>推荐提问</span>
+            <button class="dropdown-btn">
+              AI 自动生成
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="rule-toggle-row">
+            <span>权限设置</span>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="rule-toggle-row">
+            <span class="label">
+              Mock模式变量
+              <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </span>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="rule-toggle-row">
+            <span>变量</span>
+            <button class="add-mini-btn">+</button>
+          </div>
+
+          <button class="save-btn">已保存</button>
+        </div>
+      </div>
+
+      <!-- ===== 知识页面 ===== -->
+      <div class="page" id="page-knowledge">
+        <div class="page-title">知识</div>
+        <div class="page-body">
+          <div class="kb-section">
+            <!-- 文档知识库 -->
+            <div class="kb-type-card">
+              <div class="kb-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <line x1="10" y1="9" x2="8" y2="9"/>
+                </svg>
+              </div>
+              <div class="kb-info">
+                <div class="title-row"><h4>文档知识库</h4></div>
+                <p>从文档、网页、图片、视频中获取知识库信息，适合文本知识检索</p>
+              </div>
+              <button class="add-btn" onclick="showModal('add-doc-modal')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                添加文档
+              </button>
+            </div>
+
+            <!-- 多模态知识库 -->
+            <div class="kb-type-card">
+              <div class="kb-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
+                </svg>
+              </div>
+              <div class="kb-info">
+                <div class="title-row"><h4>多模态知识库</h4><span class="badge-new">新增</span></div>
+                <p>支持文搜图、图搜图等多模态知识查询，支持图文跨模态检索</p>
+              </div>
+              <button class="add-btn" onclick="showModal('add-doc-modal')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                添加文档
+              </button>
+            </div>
+
+            <!-- 问答知识库 -->
+            <div class="kb-type-card">
+              <div class="kb-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <div class="kb-info">
+                <div class="title-row"><h4>问答知识库</h4></div>
+                <p>从QA问答中获取知识库，适合客服场景</p>
+              </div>
+              <button class="add-btn" onclick="showModal('add-qa-modal')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                添加问答
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 直播助手功能配置 页面 ===== -->
+      <div class="page" id="page-skill">
+        <div class="live-header">
+          <div class="live-title-row">
+            <span class="title">直播助手功能配置</span>
+            <span class="live-badge">已启用</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--primary);background:var(--primary-light);padding:5px 14px;border-radius:20px;font-weight:600;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            配置已生效
+          </div>
+        </div>
+        <div class="live-body">
+          <div class="live-desc">
+            直播助手已配置全年节日营销日历与策略方案，支持日历视图与时间轴视图两种模式切换。
+            点击下方标签查看不同呈现方式，每个版本均包含巴西主要节日节点、圣灵节重点标注及葡语营销策略。
+          </div>
+
+          <!-- 视图切换 Tab -->
+          <div class="live-view-tabs">
+            <button class="live-view-tab active" onclick="switchLiveView(this,'calendar')">日历版</button>
+            <button class="live-view-tab" onclick="switchLiveView(this,'timeline')">时间轴版</button>
+          </div>
+
+          <!-- 日历版 iframe -->
+          <div class="live-iframe-wrap active" id="live-view-calendar">
+            <iframe src="calendar-poster-light.html" title="日历版营销日历"></iframe>
+          </div>
+
+          <!-- 时间轴版 iframe -->
+          <div class="live-iframe-wrap" id="live-view-timeline">
+            <iframe src="timeline-poster-light.html" title="时间轴版营销日历"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 工作流页面 ===== -->
+      <div class="page" id="page-workflow">
+        <div class="page-title">工作流</div>
+        <div class="empty-state">
+          <div class="empty-illustration">
+            <svg viewBox="0 0 120 100" fill="none">
+              <defs>
+                <linearGradient id="wf-bg" x1="0" y1="0" x2="120" y2="100">
+                  <stop offset="0%" stop-color="#C7D2FE" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#A5B4FC" stop-opacity="0.2"/>
+                </linearGradient>
+                <linearGradient id="wf-box" x1="40" y1="30" x2="80" y2="70">
+                  <stop offset="0%" stop-color="#818CF8"/>
+                  <stop offset="100%" stop-color="#6366F1"/>
+                </linearGradient>
+                <linearGradient id="wf-dot1" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#818CF8"/>
+                  <stop offset="100%" stop-color="#C7D2FE"/>
+                </linearGradient>
+                <linearGradient id="wf-dot2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#A5B4FC"/>
+                  <stop offset="100%" stop-color="#E0E7FF"/>
+                </linearGradient>
+              </defs>
+              <circle cx="60" cy="50" r="45" fill="url(#wf-bg)"/>
+              <rect x="38" y="28" width="44" height="44" rx="10" fill="url(#wf-box)"/>
+              <rect x="45" y="35" width="30" height="6" rx="3" fill="rgba(255,255,255,0.35)"/>
+              <rect x="45" y="44" width="20" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+              <rect x="45" y="51" width="24" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+              <circle cx="22" cy="28" r="5" fill="url(#wf-dot1)" opacity="0.7"/>
+              <circle cx="95" cy="35" r="4" fill="url(#wf-dot2)" opacity="0.6"/>
+              <circle cx="18" cy="65" r="3.5" fill="url(#wf-dot2)" opacity="0.5"/>
+              <circle cx="98" cy="72" r="5" fill="url(#wf-dot1)" opacity="0.6"/>
+              <circle cx="55" cy="12" r="3" fill="url(#wf-dot2)" opacity="0.5"/>
+            </svg>
+          </div>
+          <div class="empty-text">添加工作流，让 Agent 做更多的事情</div>
+          <button class="empty-action-btn" onclick="showModal('add-workflow-modal')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            添加工作流
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧预览区 -->
+    <div class="preview-panel">
+      <div class="preview-header">
+        <span>效果预览</span>
+        <div class="icons">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
+          </svg>
+        </div>
+      </div>
+      <div class="preview-body" id="preview-body">
+        <div class="chat-welcome">
+          <div class="welcome-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+          </div>
+          <h4>A企业直播脚本撰写Agent</h4>
+          <p>点击下方"生成直播脚本"按钮，Agent 将按流程进行需求沟通并生成完整脚本</p>
+        </div>
+      </div>
+      <div class="preview-input-wrap">
+        <button class="generate-script-btn" id="generateScriptBtn" onclick="startScriptDialogue()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          生成直播脚本
+        </button>
+        <div class="preview-input-box">
+          <input type="text" id="chat-input" placeholder="输入消息或点击右侧按钮开始...">
+          <div class="input-icons">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+              <polyline points="15 3 21 3 21 9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+              <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <button class="send-btn" id="send-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 添加文档弹窗 ===== -->
+<div class="modal-overlay" id="add-doc-modal">
+  <div class="modal">
+    <h3>添加文档</h3>
+    <div class="form-group">
+      <label>上传文件</label>
+      <div id="upload-zone" style="border:2px dashed var(--border);border-radius:var(--radius);padding:32px;text-align:center;color:var(--text-muted);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:8px;">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <p style="font-size:13px;" id="upload-text">点击或拖拽文件到此处上传</p>
+        <p style="font-size:11px;">支持 PDF、Word、Excel 等格式</p>
+        <input type="file" id="doc-upload" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.json,.md" style="display:none;">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="hideModal('add-doc-modal')">取消</button>
+      <button class="confirm" onclick="confirmUpload()">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 添加问答弹窗 ===== -->
+<div class="modal-overlay" id="add-qa-modal">
+  <div class="modal">
+    <h3>添加问答</h3>
+    <div class="form-group">
+      <label>问题</label>
+      <input type="text" placeholder="输入常见问题">
+    </div>
+    <div class="form-group">
+      <label>回答</label>
+      <textarea placeholder="输入标准回答..." style="min-height:100px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button onclick="hideModal('add-qa-modal')">取消</button>
+      <button class="confirm">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 添加Skill弹窗 ===== -->
+<div class="modal-overlay" id="add-skill-modal">
+  <div class="modal">
+    <h3>添加 Skill 服务</h3>
+    <div class="form-group">
+      <label>服务名称</label>
+      <input type="text" placeholder="输入服务名称">
+    </div>
+    <div class="form-group">
+      <label>服务描述</label>
+      <textarea placeholder="描述该服务的功能..." style="min-height:80px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button onclick="hideModal('add-skill-modal')">取消</button>
+      <button class="confirm">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 添加工作流弹窗 ===== -->
+<div class="modal-overlay" id="add-workflow-modal">
+  <div class="modal">
+    <h3>添加工作流</h3>
+    <div class="form-group">
+      <label>工作流名称</label>
+      <input type="text" placeholder="输入工作流名称">
+    </div>
+    <div class="form-group">
+      <label>工作流描述</label>
+      <textarea placeholder="描述该工作流的功能..." style="min-height:80px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button onclick="hideModal('add-workflow-modal')">取消</button>
+      <button class="confirm">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 弹窗控制
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('show'); });
+});
+
+// 导航切换
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById('page-' + item.dataset.page);
+    if (page) page.classList.add('active');
+  });
+});
+
+// 顶部标签切换
+document.querySelectorAll('.header-tabs .tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.header-tabs .tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+
+// ============ 直播助手 - 视图切换 ============
+function switchLiveView(btn, view) {
+  document.querySelectorAll('.live-view-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.live-iframe-wrap').forEach(w => w.classList.remove('active'));
+  document.getElementById('live-view-' + view).classList.add('active');
+}
+
+// ============ 规则字段 textarea 自适应高度 ============
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+document.querySelectorAll('.field-content').forEach(el => {
+  autoResize(el);
+  el.addEventListener('input', () => autoResize(el));
+});
+
+// ============ 效果预览 - 直播脚本对话流程 ============
+const chatInput = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+const chatBody = document.getElementById('preview-body');
+let scriptDialogueActive = false;
+let scriptStep = 0;
+
+function appendMessage(role, text) {
+  const welcome = chatBody.querySelector('.chat-welcome');
+  if (welcome) welcome.remove();
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg ' + role;
+  const avatar = document.createElement('div');
+  avatar.className = 'chat-avatar ' + (role === 'user' ? 'user-avatar' : 'ai');
+  avatar.textContent = role === 'user' ? 'U' : 'A';
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  bubble.textContent = text;
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  chatBody.appendChild(wrap);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function showTyping() {
+  const welcome = chatBody.querySelector('.chat-welcome');
+  if (welcome) welcome.remove();
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg ai';
+  wrap.id = 'typing-indicator';
+  const avatar = document.createElement('div');
+  avatar.className = 'chat-avatar ai';
+  avatar.textContent = 'A';
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble typing';
+  bubble.innerHTML = '<span></span><span></span><span></span>';
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  chatBody.appendChild(wrap);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function aiSay(text, delay) {
+  return new Promise(resolve => {
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      appendMessage('ai', text);
+      resolve();
+    }, delay || 800);
+  });
+}
+
+function userSay(text, delay) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      appendMessage('user', text);
+      resolve();
+    }, delay || 500);
+  });
+}
+
+function appendScriptCard(scriptHTML) {
+  const welcome = chatBody.querySelector('.chat-welcome');
+  if (welcome) welcome.remove();
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg ai';
+  const avatar = document.createElement('div');
+  avatar.className = 'chat-avatar ai';
+  avatar.textContent = 'A';
+  const card = document.createElement('div');
+  card.className = 'chat-script-card';
+  card.innerHTML =
+    '<div class="script-card-header">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>' +
+        '<polyline points="14 2 14 8 20 8"/>' +
+      '</svg>' +
+      '直播脚本已生成' +
+    '</div>' +
+    '<div class="script-card-body" id="scriptCardBody">' + scriptHTML + '</div>' +
+    '<div class="script-card-footer">' +
+      '<button class="btn-export" onclick="exportScript()">导出脚本</button>' +
+      '<button class="btn-copy" onclick="copyScript()">复制全部</button>' +
+    '</div>';
+  wrap.appendChild(avatar);
+  wrap.appendChild(card);
+  chatBody.appendChild(wrap);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function copyScript() {
+  const body = document.getElementById('scriptCardBody');
+  if (body) {
+    const text = body.innerText;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    alert('脚本已复制到剪贴板！');
+  }
+}
+
+function exportScript() {
+  alert('脚本导出功能：脚本内容已准备就绪，可复制后粘贴到文档中保存。');
+}
+
+// 多步对话流程
+async function startScriptDialogue() {
+  if (scriptDialogueActive) return;
+  scriptDialogueActive = true;
+  document.getElementById('generateScriptBtn').disabled = true;
+  chatBody.innerHTML = '';
+
+  // === Step 1: AI 主动发起需求沟通 ===
+  await aiSay(
+    '您好！我是 A企业直播脚本撰写Agent，专注于为您生成高质量的直播脚本。\n\n' +
+    '为了精准定制脚本内容，我需要先了解一些关键信息：\n' +
+    '1. 直播平台是哪个？（如 TikTok、抖音、快手等）\n' +
+    '2. 直播时间和时长安排？\n' +
+    '3. 直播主题和核心目标是什么？\n' +
+    '4. 目标受众群体的特征？\n' +
+    '5. 需要重点推广的产品或服务？\n' +
+    '6. 直播语言和风格偏好？\n\n' +
+    '请告诉我您的直播需求，我会据此生成完整脚本。', 1200);
+
+  // === Step 2: 用户回复需求 ===
+  await userSay(
+    '我们将在 TikTok 平台进行直播，时间定于 8月15日晚间 20:00 至 24:00 的流量黄金时段，' +
+    '主题为"三年同行、绿动巴西"。\n' +
+    '核心目标是总观看人数达到 2000 人以上，收集 100 条有效线索。\n' +
+    '采用 XR 全息直播形式，强化沉浸式体验。\n' +
+    '面向 25-45 岁家庭用户，主推海鸥、宋PLUS DM-i、汉EV 三款车型，' +
+    '卖点聚焦实用、安全、省油与高性价比。\n' +
+    '使用葡萄牙语，营造热情轻松的氛围，完整覆盖开场、车型讲解、互动及逼单全流程。', 1000);
+
+  // === Step 3: AI 确认并追问细节 ===
+  await aiSay(
+    '收到您的需求！我已梳理以下关键信息：\n\n' +
+    '平台：TikTok（巴西区）\n' +
+    '时间：8月15日 20:00-24:00（4小时黄金时段）\n' +
+    '主题：三年同行、绿动巴西\n' +
+    '目标：2000+ 观看 / 100+ 有效线索\n' +
+    '形式：XR 全息直播\n' +
+    '受众：25-45岁巴西家庭用户\n' +
+    '主推车型：海鸥 / 宋PLUS DM-i / 汉EV\n' +
+    '语言：葡萄牙语（PT-BR）\n\n' +
+    '还有几个细节想确认：\n' +
+    '1. 三款车型的讲解顺序和各自时长分配有偏好吗？\n' +
+    '2. 互动环节希望包含哪些形式？（抽奖、问答、投票等）\n' +
+    '3. 逼单环节的优惠力度和留资方式是什么？', 1400);
+
+  // === Step 4: 用户补充 ===
+  await userSay(
+    '讲解顺序按海鸥→宋PLUS DM-i→汉EV，由亲民到高端逐步升级。\n' +
+    '每款车约 40 分钟，中间穿插互动。\n' +
+    '互动包含限时抽奖、趣味问答和用户投票选车环节。\n' +
+    '逼单环节提供限时优惠券和免费试驾预约，通过表单留资。\n' +
+    '请帮我生成完整脚本！', 1000);
+
+  // === Step 5: AI 确认并生成脚本 ===
+  await aiSay(
+    '明白了！我将按照以下结构为您生成完整的葡萄牙语直播脚本：\n\n' +
+    '第一部分：暖场开场（20:00-20:15）\n' +
+    '第二部分：海鸥车型讲解（20:15-21:00）\n' +
+    '第三部分：宋PLUS DM-i 讲解（21:00-21:45）\n' +
+    '第四部分：汉EV 讲解（21:45-22:30）\n' +
+    '第五部分：互动高潮（22:30-23:15）\n' +
+    '第六部分：逼单转化（23:15-23:45）\n' +
+    '第七部分：收官总结（23:45-24:00）\n\n' +
+    '正在为您生成完整脚本，请稍候...', 1400);
+
+  // === Step 6: 输出完整脚本卡片 ===
+  await aiSay('脚本生成中... 已调用"本地化内容生成""直播结构排布""互动话术适配""合规自查"等核心 Skills 协同撰写，预计 5 秒内完成。', 2000);
+
+  const scriptHTML = buildFullScript();
+  showTyping();
+  setTimeout(() => {
+    hideTyping();
+    appendScriptCard(scriptHTML);
+    scriptDialogueActive = false;
+    document.getElementById('generateScriptBtn').disabled = false;
+    document.getElementById('generateScriptBtn').textContent = '重新生成直播脚本';
+  }, 2500);
+}
+
+function buildFullScript() {
+  return '' +
+    '<h3>直播脚本：三年同行、绿动巴西</h3>' +
+    '<p>平台：TikTok（巴西区） | 时间：8月15日 20:00-24:00 | 语言：葡萄牙语（PT-BR）\n形式：XR 全息直播 | 目标：2000+ 观看 / 100+ 有效线索</p>' +
+
+    '<span class="script-phase">第一部分</span>' +
+    '<h3>暖场开场（20:00-20:15）</h3>' +
+    '<p>主播身着巴西黄绿主题服饰，XR 背景呈现圣保罗城市夜景与比亚迪品牌LOGO交叠效果。\n\n' +
+    '<span class="script-highlight">主播话术：</span>\n' +
+    '"Boa noite, Brasil! Bem-vindos à nossa transmissao especial de hoje! Sou [Nome do Host], e esta noite vamos celebrar juntos tres anos de parceria entre a BYD e voce! O tema de hoje e \'Tres Anos Juntos, Brasil Verde\' — tres anos de inovacao, tres anos de confianca. E hoje, com a tecnologia XR holografica, vamos levar voce para dentro dos nossos carros como nunca antes! Fiquem ligados, porque teremos sorteios exclusivos e ofertas imperdiveis durante toda a noite!"\n\n' +
+    '<span class="script-highlight">互动引导：</span>\n' +
+    '引导观众在评论区打出"VERDE"参与开场抽奖，前50名可获得BYD定制环保袋。XR场景切换至亚马逊雨林全景，强化"绿动巴西"主题。\n\n' +
+    '<span class="script-highlight">数据埋点：</span>\n' +
+    '20:05 推送第一波福袋，引导关注+分享，提升直播间权重。</p>' +
+
+    '<span class="script-phase">第二部分</span>' +
+    '<h3>海鸥车型讲解（20:15-21:00）</h3>' +
+    '<p>XR场景切换至海鸥3D全息模型，车辆悬浮旋转展示，配合光粒子特效。\n\n' +
+    '<span class="script-highlight">主播话术：</span>\n' +
+    '"E comecamos com o nosso querido BYD Seagull! O carro que esta revolucionando o mercado brasileiro de veiculos eletricos. Olhem essa aerodinamica incrivel, esse design moderno e compacto — perfeito para a cidade! Com autonomia de ate 305 quilometros, voce esquece o posto de gasolina! E o preco? A partir de R$ 119.800, um dos eletricos mais acessiveis do Brasil! Para a familia brasileira que quer economizar e ainda ajudar o planeta, o Seagull e a escolha perfeita!"\n\n' +
+    '<span class="script-highlight">卖点展示：</span>\n' +
+    'XR 360度展示车身：刀片电池特写→快充接口→10.1寸旋转Pad→后排空间实拍。\n主播坐进车内，展示NVH静音效果，对比燃油车噪音数据。\n\n' +
+    '<span class="script-highlight">互动话术：</span>\n' +
+    '"Quem aqui ja pensou em ter um eletrico? Digita \'SEAGULL\' nos comentarios se voce se interessou! Vou sortear 3 visitantes de teste drive entre quem comentar!"\n\n' +
+    '<span class="script-highlight">逼单引导：</span>\n' +
+    '20:50 推出海鸥专属优惠：当晚预约试驾即送价值R$500充电卡，限前30名。</p>' +
+
+    '<span class="script-phase">第三部分</span>' +
+    '<h3>宋PLUS DM-i 讲解（21:00-21:45）</h3>' +
+    '<p>XR场景切换为家庭出行场景：海滩公路、周末露营、超市采购等生活画面叠加车辆模型。\n\n' +
+    '<span class="script-highlight">主播话术：</span>\n' +
+    '"Agora vamos falar do BYD Song PLUS DM-i — o SUV hibrido que esta conquistando o coracao das familias brasileiras! Imagina voce com sua familia, fim de semana, estrada aberta, e nao precisa se preocupar com combustivel! Com autonomia total de mais de 1.200 quilometros, o Song PLUS leva voce de Sao Paulo ao Rio sem parar para abastecer! E o melhor: consumo de apenas 4,4L/100km! Isso e economia de verdade, pessoal!"\n\n' +
+    '<span class="script-highlight">卖点展示：</span>\n' +
+    'XR拆解DM-i超级混动系统：发动机+电机协作动画→能量流动可视化→油电切换演示。\n展示DiLink智能座舱：语音控制、K歌模式、儿童锁联动。\n后排空间实拍：安装儿童座椅演示→腿部空间测量→后备箱容量展示。\n\n' +
+    '<span class="script-highlight">互动话术：</span>\n' +
+    '"Quantos filhos voce tem? Digita nos comentarios! Quem tem filhos sabe a importancia de um carro seguro e espacoso. O Song PLUS tem nota maxima em seguranca, com 7 airbags e sistema de freio autonomico! E para os pais: tem modo criancas com bloqueio de janelas e travas automaticas!"\n\n' +
+    '<span class="script-highlight">逼单引导：</span>\n' +
+    '21:35 推出宋PLUS DM-i限时金融方案：首付R$15.000，月供低至R$1.299，72期0利息。扫码留资即可锁定名额。</p>' +
+
+    '<span class="script-phase">第四部分</span>' +
+    '<h3>汉EV 讲解（21:45-22:30）</h3>' +
+    '<p>XR场景升级为高端科技风：深空背景+霓虹光效+汉EV全息悬浮展示，营造旗舰气场。\n\n' +
+    '<span class="script-highlight">主播话术：</span>\n' +
+    '"E agora, o moment que todos estavam esperando — o BYD Han EV, nossa flagship! Este nao e so um carro, e uma obra de arte tecnologica! Design que mescla elegancia oriental com futurismo, autonomia de ate 605 quilometros, aceleracao de 0 a 100 em apenas 3,9 segundos! O Han EV e para quem busca o melhor, sem comprometer nada. E com a nossa tecnologia Blade Battery, seguranca de nivel mundial!"\n\n' +
+    '<span class="script-highlight">卖点展示：</span>\n' +
+    'XR引擎舱透视：刀片电池阵列→八合一电驱总成→DiSus智能车身控制系统动画。\n智能驾驶演示：APA自动泊车→ICC巡航辅助→AEB紧急制动场景模拟。\n豪华内饰：Nappa真皮→丹拿音响12喇叭→5G智能座舱交互演示。\n\n' +
+    '<span class="script-highlight">互动话术：</span>\n' +
+    '"Se voce pudesse ter qualquer carro, qual seria? Digita \'HAN\' se esse e o seu sonho! O Han EV e para quem chegou no topo, mas sabe que sempre pode ir mais longe. E hoje, na nossa live, temos uma oferta exclusiva que voce nao vai encontrar em nenhum outro lugar!"\n\n' +
+    '<span class="script-highlight">逼单引导：</span>\n' +
+    '22:20 推出汉EV尊享礼遇：当晚留资用户享价值R$8.000装潢礼包（含贴膜+脚垫+行车记录仪），限前20名。</p>' +
+
+    '<span class="script-phase">第五部分</span>' +
+    '<h3>互动高潮（22:30-23:15）</h3>' +
+    '<p>XR场景切换为嘉年华风格：巴西桑巴节奏背景音乐+动态烟花特效+弹幕飘屏。\n\n' +
+    '<span class="script-highlight">环节1 - 限时抽奖（22:30-22:45）：</span>\n' +
+    '"Atencao, gente! Agora vai comecar o nosso MEGA SORTEIO! Vamos sortear 10 carregadores portateis da BYD, 5 kits eco e 1 sorteao MEGA: um fim de semana de test drive do carro que voce escolher! Para participar, e simples: compartilha a live, segue o nosso canal e comenta qual carro voce quer ganhar o test drive!"\n\n' +
+    '<span class="script-highlight">环节2 - 趣味问答（22:45-23:00）：</span>\n' +
+    '出5道BYD知识问答题（葡萄牙语），答对观众截图发评论区，每题前3名获充电宝。\n示例："Qual e a autonomia do BYD Seagull?" / "O que significa DM-i?"\n\n' +
+    '<span class="script-highlight">环节3 - 投票选车（23:00-23:15）：</span>\n' +
+    '开启TikTok投票功能："Qual carro voce levaria para casa?" — Seagull / Song PLUS / Han EV。\n实时展示投票结果，主播根据结果重点回顾人气最高车型的核心优势。</p>' +
+
+    '<span class="script-phase">第六部分</span>' +
+    '<h3>逼单转化（23:15-23:45）</h3>' +
+    '<p>XR场景切换为限时倒计时风格：巨大数字钟+优惠标签飘浮+已留资人数实时计数。\n\n' +
+    '<span class="script-highlight">主播话术：</span>\n' +
+    '"Gente, restam apenas 45 minutos! Se voce ainda nao fez o seu cadastro, agora e a hora! As ofertas de hoje sao exclusivas, so valem durante esta live! Olha so o que voce ganha:\n\n' +
+    'Para o Seagull: cartao de recarga de R$500 + teste drive gratuito\n' +
+    'Para o Song PLUS: financiamento 0% de juros em 72x + kit familiar\n' +
+    'Para o Han EV: R$8.000 em acessorios premium + visita prioritaria\n\n' +
+    'E so clicar no link na bio ou escanear o QR code na tela! Demora menos de 1 minuto! Nao perca essa oportunidade — amanha esses precos voltam ao normal!"\n\n' +
+    '<span class="script-highlight">逼单策略：</span>\n' +
+    '23:20 推送第一次逼单：展示"已有XX人留资"实时数字，制造紧迫感。\n23:30 推送第二次逼单：追加10个名额限量优惠，先到先得。\n23:40 最后一波：主播口播"Ultima chamada!"，倒计时5分钟，配合XR全屏红色警报效果。\n\n' +
+    '<span class="script-highlight">留资方式：</span>\n' +
+    'TikTok直播间小风车跳转→H5表单（姓名/电话/意向车型/城市）→提交后自动发送短信确认。</p>' +
+
+    '<span class="script-phase">第七部分</span>' +
+    '<h3>收官总结（23:45-24:00）</h3>' +
+    '<p>XR场景回到开场圣保罗夜景，渐变为品牌LOGO+环保主题画面。\n\n' +
+    '<span class="script-highlight">主播话术：</span>\n' +
+    '"Brasil, foi incrivel! Obrigado a cada um de voce que ficou com a gente nesta noite especial! Tres anos de parceria, e muitos mais por vir! Para quem cadastrou, em breve entraremos em contato! E para quem nao conseguiu, fique de olho no nosso canal — teremos mais novidades em breve! Um abraco, e ate a proxima! Verde Brasil, verde BYD!"\n\n' +
+    '<span class="script-highlight">收官动作：</span>\n' +
+    '24:00 直播结束画面：品牌LOGO+关注引导+"Obrigado Brasil"标语。\n后台同步导出留资数据，推送至CRM系统跟进。\n直播回放自动上架，附车型详解时间戳。</p>' +
+
+    '<h3>合规自查清单</h3>' +
+    '<p>1. 所有价格标注均为官方指导价，已核实当地合规要求\n' +
+    '2. 金融方案已通过当地合规审核，年化利率公示完整\n' +
+    '3. 抽奖活动已遵循巴西当地博彩法规，奖品价值未超限\n' +
+    '4. 葡萄牙语话术已由母语级本地化团队校对\n' +
+    '5. XR素材中出现的城市地标已获取使用授权\n' +
+    '6. 留资表单已包含隐私条款同意勾选项（LGPD合规）</p>';
+}
+
+function handleSend() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  appendMessage('user', text);
+  chatInput.value = '';
+  showTyping();
+  const delay = 600 + Math.random() * 800;
+  setTimeout(() => {
+    hideTyping();
+    const checked = document.querySelectorAll('.skill-item.checked');
+    if (text.toLowerCase().includes('技能') || text.toLowerCase().includes('能力') || text.toLowerCase().includes('skills')) {
+      if (checked.length > 0) {
+        const names = Array.from(checked).map(item => item.querySelector('.skill-name').textContent);
+        appendMessage('ai', '我已配置以下 Skills：\n\n' + names.map((n, i) => (i + 1) + '. ' + n).join('\n'));
+      } else {
+        appendMessage('ai', '我的 Skills 暂未配置，请在左侧「Skills」页面中选择需要的技能。');
+      }
+    } else if (text.includes('脚本') || text.includes('直播')) {
+      appendMessage('ai', '请点击下方"生成直播脚本"按钮，我将按流程进行需求沟通并生成完整的直播脚本。');
+    } else if (text.includes('你好') || text.toLowerCase().includes('hi') || text.toLowerCase().includes('hello')) {
+      appendMessage('ai', '您好！我是 A企业直播脚本撰写Agent，专注于为 TikTok 等平台生成专业直播脚本。请点击"生成直播脚本"按钮开始。');
+    } else {
+      appendMessage('ai', '我是 A企业直播脚本撰写Agent，可以帮您生成完整的直播脚本。请点击下方"生成直播脚本"按钮，或告诉我您的直播需求。');
+    }
+  }, delay);
+}
+
+sendBtn.addEventListener('click', handleSend);
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    handleSend();
+  }
+});
+
+// ============ Skills 多选交互 ============
+let currentSkillCategory = 'all';
+
+function toggleSkill(el) {
+  el.classList.toggle('checked');
+  updateSkillCount();
+  updateSkillChips();
+}
+
+function updateSkillCount() {
+  const checked = document.querySelectorAll('.skill-item.checked');
+  const count = checked.length;
+  document.getElementById('skillSelectedCount').textContent = count;
+  document.getElementById('skillCountBadge').textContent = '已选 ' + count + ' 项';
+  document.getElementById('skillConfirmBtn').disabled = count === 0;
+
+  const allItems = document.querySelectorAll('.skill-item');
+  const btn = document.getElementById('selectAllBtn');
+  if (count === allItems.length && allItems.length > 0) {
+    btn.textContent = '取消全选';
+  } else {
+    btn.textContent = '全选';
+  }
+}
+
+function updateSkillChips() {
+  const container = document.getElementById('skillChips');
+  const checked = document.querySelectorAll('.skill-item.checked');
+  container.innerHTML = '';
+  checked.forEach(item => {
+    const name = item.querySelector('.skill-name').textContent;
+    const chip = document.createElement('div');
+    chip.className = 'skill-chip';
+    chip.innerHTML = name + ' <span class="chip-close" onclick="removeSkillChip(this, \'' + name.replace(/'/g, "\\'") + '\')">&times;</span>';
+    container.appendChild(chip);
+  });
+}
+
+function removeSkillChip(closeBtn, name) {
+  document.querySelectorAll('.skill-item').forEach(item => {
+    if (item.querySelector('.skill-name').textContent === name) {
+      item.classList.remove('checked');
+    }
+  });
+  updateSkillCount();
+  updateSkillChips();
+}
+
+function toggleSelectAll() {
+  const visibleItems = document.querySelectorAll('.skill-item');
+  const visibleChecked = document.querySelectorAll('.skill-item.checked');
+  const allChecked = visibleChecked.length === visibleItems.length && visibleItems.length > 0;
+
+  visibleItems.forEach(item => {
+    if (allChecked) {
+      item.classList.remove('checked');
+    } else {
+      item.classList.add('checked');
+    }
+  });
+  updateSkillCount();
+  updateSkillChips();
+}
+
+function filterSkills() {
+  const query = document.getElementById('skillSearchInput').value.toLowerCase().trim();
+  const groups = document.querySelectorAll('.skill-group');
+  let hasResult = false;
+
+  groups.forEach(group => {
+    if (currentSkillCategory !== 'all' && group.dataset.category !== currentSkillCategory) {
+      group.style.display = 'none';
+      return;
+    }
+
+    const items = group.querySelectorAll('.skill-item');
+    let groupVisible = false;
+
+    items.forEach(item => {
+      const name = (item.dataset.name || '').toLowerCase();
+      if (query === '' || name.includes(query)) {
+        item.style.display = '';
+        groupVisible = true;
+        hasResult = true;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    group.style.display = groupVisible ? '' : 'none';
+  });
+
+  document.getElementById('skillEmptySearch').style.display = hasResult ? 'none' : 'block';
+}
+
+function filterCategory(el, category) {
+  document.querySelectorAll('.skill-cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentSkillCategory = category;
+
+  const groups = document.querySelectorAll('.skill-group');
+  groups.forEach(group => {
+    if (category === 'all' || group.dataset.category === category) {
+      group.style.display = '';
+    } else {
+      group.style.display = 'none';
+    }
+  });
+
+  filterSkills();
+}
+
+function clearAllSkills() {
+  document.querySelectorAll('.skill-item.checked').forEach(item => {
+    item.classList.remove('checked');
+  });
+  updateSkillCount();
+  updateSkillChips();
+}
+
+function confirmSkills() {
+  const checked = document.querySelectorAll('.skill-item.checked');
+  const names = Array.from(checked).map(item => item.querySelector('.skill-name').textContent);
+  alert('已添加 ' + names.length + ' 项技能：\n\n' + names.join('、'));
+}
+
+// 初始化分组计数
+function initSkillGroupCounts() {
+  const categories = ['localization', 'structure', 'interaction', 'compliance', 'analytics', 'marketing', 'media'];
+  categories.forEach(cat => {
+    const group = document.querySelector('.skill-group[data-category="' + cat + '"]');
+    if (group) {
+      const count = group.querySelectorAll('.skill-item').length;
+      const el = document.getElementById('gcount-' + cat);
+      if (el) el.textContent = '(' + count + ')';
+    }
+  });
+}
+
+initSkillGroupCounts();
+updateSkillCount();
+
+// ============ 文档上传 ============
+let uploadedFile = null;
+
+document.getElementById('upload-zone').addEventListener('click', () => {
+  document.getElementById('doc-upload').click();
+});
+
+document.getElementById('doc-upload').addEventListener('change', (e) => {
+  handleFileSelect(e.target.files[0]);
+});
+
+const uploadZone = document.getElementById('upload-zone');
+uploadZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadZone.style.borderColor = 'var(--primary)';
+  uploadZone.style.background = '#EEF2FF';
+});
+uploadZone.addEventListener('dragleave', () => {
+  uploadZone.style.borderColor = 'var(--border)';
+  uploadZone.style.background = '';
+});
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.style.borderColor = 'var(--border)';
+  uploadZone.style.background = '';
+  if (e.dataTransfer.files.length > 0) {
+    handleFileSelect(e.dataTransfer.files[0]);
+  }
+});
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function handleFileSelect(file) {
+  if (!file) return;
+  uploadedFile = file;
+  document.getElementById('upload-text').textContent = '已选择：' + file.name + '（' + formatSize(file.size) + '）';
+  document.getElementById('upload-text').style.color = 'var(--primary)';
+}
+
+function confirmUpload() {
+  if (!uploadedFile) {
+    alert('请先选择要上传的文档');
+    return;
+  }
+  alert('文档「' + uploadedFile.name + '」上传成功！\n大小：' + formatSize(uploadedFile.size));
+  hideModal('add-doc-modal');
+  uploadedFile = null;
+  document.getElementById('upload-text').textContent = '点击或拖拽文件到此处上传';
+  document.getElementById('upload-text').style.color = '';
+  document.getElementById('doc-upload').value = '';
+}
+</script>
+</body>
+</html>
