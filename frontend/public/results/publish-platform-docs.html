@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>发布平台 · 技术文档</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',system-ui,sans-serif;background:#f5f6f8;color:#1a1f36;line-height:1.7;padding:0}
+.container{max-width:960px;margin:0 auto;padding:40px 32px}
+h1{font-size:32px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px;color:#1a3a5c}
+h2{font-size:22px;font-weight:700;margin:40px 0 16px;color:#1a3a5c;border-bottom:2px solid #e8eaed;padding-bottom:8px}
+h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:#374151}
+p{margin-bottom:14px;color:#4b5563}
+.meta{font-size:13px;color:#9ca3af;margin-bottom:32px}
+.hero{background:linear-gradient(135deg,#1a3a5c 0%,#0f2540 100%);color:#fff;padding:32px;border-radius:14px;margin-bottom:32px}
+.hero h1{color:#fff;margin:0}
+.hero p{color:rgba(255,255,255,.7);margin-top:8px;font-size:14px}
+.hero .tags{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.hero .tag{font-size:11px;font-weight:600;padding:4px 12px;border-radius:12px;background:rgba(255,255,255,.12);color:#bfa46f}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+th{background:#f3f4f6;padding:10px 14px;text-align:left;font-weight:600;color:#4b5563;border-bottom:2px solid #e8eaed}
+td{padding:10px 14px;border-bottom:1px solid #f3f4f6;color:#4b5563}
+tr:hover td{background:#f9fafb}
+code{background:#eef0f4;padding:2px 6px;border-radius:4px;font-size:13px;font-family:'SF Mono','Fira Code',monospace;color:#7c5bba}
+pre{background:#1f2937;color:#e2e8f0;padding:16px 20px;border-radius:10px;overflow-x:auto;margin:16px 0;font-size:13px;line-height:1.5}
+pre code{background:none;color:inherit;padding:0}
+.card{background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px;margin:16px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card h3{margin-top:0}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;margin-right:6px}
+.badge-css{background:#d3eef5;color:#0a8db3}
+.badge-html{background:#fae3e2;color:#d4504e}
+.badge-js{background:#d8f0e6;color:#2d9d78}
+.badge-anim{background:#ece6f7;color:#7c5bba}
+.callout{background:#f5efe3;border-left:4px solid #bfa46f;padding:14px 20px;border-radius:0 8px 8px 0;margin:16px 0;font-size:14px;color:#4b5563}
+ul,ol{margin:8px 0 16px 20px;color:#4b5563}
+li{margin-bottom:6px}
+.section{margin-bottom:32px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.stat{background:#fff;border:1px solid #e8eaed;border-radius:8px;padding:16px;text-align:center}
+.stat .num{font-size:24px;font-weight:800;color:#1a3a5c}
+.stat .lbl{font-size:11px;color:#9ca3af;margin-top:4px}
+hr{border:none;border-top:1px solid #e8eaed;margin:32px 0}
+.toc{background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:32px}
+.toc h3{margin:0 0 12px;font-size:14px;color:#374151}
+.toc ol{margin:0;padding-left:20px}
+.toc a{color:#1a3a5c;text-decoration:none;font-size:13px}
+.toc a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <h1>🚀 发布平台 · 技术文档</h1>
+  <p>Brasil Distribuicao · Sistema de Gestao de Conteudo Multiplataforma — 巴西多平台内容分发管理系统</p>
+  <div class="tags">
+    <span class="tag">2982 行</span>
+    <span class="tag">230KB</span>
+    <span class="tag">零框架</span>
+    <span class="tag">纯原生 HTML/CSS/JS</span>
+    <span class="tag">8 平台分发</span>
+  </div>
+</div>
+
+<div class="toc">
+  <h3>📑 目录</h3>
+  <ol>
+    <li><a href="#overview">项目概览</a></li>
+    <li><a href="#stack">技术栈与架构</a></li>
+    <li><a href="#css">CSS 设计系统</a></li>
+    <li><a href="#html">HTML 页面结构</a></li>
+    <li><a href="#pages">6 大功能页面</a></li>
+    <li><a href="#publish">发布系统核心</a></li>
+    <li><a href="#animation">分发成功动画详解</a></li>
+    <li><a href="#content">内容素材库系统</a></li>
+    <li><a href="#schedule">定时发布与日历</a></li>
+    <li><a href="#summary">技术亮点总结</a></li>
+  </ol>
+</div>
+
+<!-- ===== 1. 项目概览 ===== -->
+<h2 id="overview">1. 项目概览</h2>
+
+<div class="stat-grid">
+  <div class="stat"><div class="num">2982</div><div class="lbl">总行数</div></div>
+  <div class="stat"><div class="num">230KB</div><div class="lbl">文件大小</div></div>
+  <div class="stat"><div class="num">8</div><div class="lbl">社交平台</div></div>
+  <div class="stat"><div class="num">6</div><div class="lbl">功能页面</div></div>
+</div>
+
+<p>这是一份面向巴西市场的<strong>多平台内容分发管理系统</strong>，模拟了从一个后台统一管理 Instagram、TikTok、Facebook、YouTube、LinkedIn、Twitter/X、Pinterest、WhatsApp 共 8 个社交媒体平台的全部流程——从内容创作、多平台预览、合规审核、一键分发到数据分析和定时排期。</p>
+
+<div class="callout">
+  💡 <strong>设计语言</strong>：采用深蓝（<code>#1a3a5c</code>）+ 金棕（<code>#bfa46f</code>）的高端商务配色，侧边栏使用深色渐变，主区域使用浅色卡片布局，整体呈现专业 SaaS 后台的视觉风格。界面语言以葡萄牙语为主、中文标注为辅。
+</div>
+
+<!-- ===== 2. 技术栈与架构 ===== -->
+<h2 id="stack">2. 技术栈与架构</h2>
+
+<h3>技术栈</h3>
+<table>
+  <tr><th>类别</th><th>技术</th><th>说明</th></tr>
+  <tr><td>HTML</td><td>原生 HTML5</td><td>无模板引擎，全部手写</td></tr>
+  <tr><td>CSS</td><td>原生 CSS3 + CSS 变量</td><td>30+ 个全局变量，支持主题切换基础</td></tr>
+  <tr><td>JavaScript</td><td>原生 ES5 兼容写法</td><td>无 Babel/TypeScript，最大兼容性</td></tr>
+  <tr><td>字体</td><td>Google Fonts: Inter</td><td>唯一外链资源</td></tr>
+  <tr><td>数据存储</td><td>localStorage</td><td>定时发布数据持久化</td></tr>
+  <tr><td>框架依赖</td><td>零</td><td>无 React/Vue/jQuery 等任何框架</td></tr>
+</table>
+
+<h3>三段式架构</h3>
+<p>整个文件分为三个主要区块：</p>
+<table>
+  <tr><th>区块</th><th>行范围</th><th>行数</th><th>内容</th></tr>
+  <tr><td><span class="badge badge-css">CSS</span> &lt;style&gt;</td><td>第 8 ~ 451 行</td><td>~443 行</td><td>全局变量、布局、组件样式、动画</td></tr>
+  <tr><td><span class="badge badge-html">HTML</span> &lt;body&gt;</td><td>第 452 ~ 1035 行</td><td>~583 行</td><td>侧边栏、顶栏、6 个页面、弹窗</td></tr>
+  <tr><td><span class="badge badge-js">JS</span> &lt;script&gt;</td><td>第 1036 ~ 2980 行</td><td>~1944 行</td><td>页面导航、发布逻辑、动画、数据</td></tr>
+</table>
+
+<!-- ===== 3. CSS 设计系统 ===== -->
+<h2 id="css">3. CSS 设计系统</h2>
+
+<h3>全局 CSS 变量（:root）</h3>
+<pre><code>:root{
+  /* 主色系 */
+  --primary:#1a3a5c;        /* 深蓝 - 主品牌色 */
+  --primary-dark:#0f2540;   /* 更深蓝 - 渐变终点 */
+  --primary-light:#e8eef5;   /* 浅蓝 - 背景高亮 */
+  --accent:#bfa46f;         /* 金棕 - 强调色 */
+  --accent-light:#f5efe3;    /* 浅金 - 标签背景 */
+
+  /* 功能色 */
+  --success:#2d9d78;        /* 绿色 - 成功 */
+  --warning:#d4943a;        /* 橙色 - 警告 */
+  --danger:#d4504e;         /* 红色 - 危险 */
+  --purple:#7c5bba;         /* 紫色 */
+  --cyan:#0a8db3;           /* 青色 */
+
+  /* 灰阶 9 级 */
+  --gray-50 ~ --gray-900
+
+  /* 布局变量 */
+  --sidebar-w:230px;
+  --topbar-h:60px;
+
+  /* 阴影 4 级 */
+  --shadow-sm ~ --shadow-xl
+
+  /* 圆角 */
+  --radius:14px; --radius-sm:10px;
+}</code></pre>
+
+<h3>关键 CSS 模块</h3>
+<table>
+  <tr><th>模块</th><th>行范围</th><th>核心样式</th></tr>
+  <tr><td>侧边栏</td><td>12 ~ 31</td><td>深色渐变背景、Logo、导航项、用户信息</td></tr>
+  <tr><td>顶栏</td><td>33 ~ 43</td><td>面包屑、搜索框、通知铃铛</td></tr>
+  <tr><td>卡片组件</td><td>61 ~ 84</td><td>快捷操作、统计卡片、面板容器</td></tr>
+  <tr><td>发布布局</td><td>124 ~ 215</td><td>三列网格、编辑器、预览、侧边选择</td></tr>
+  <tr><td>发布动画</td><td>323 ~ 377</td><td>遮罩层、进度条、纸屑效果</td></tr>
+  <tr><td>内容库</td><td>378 ~ 440</td><td>标签页、卡片列表、复制提示</td></tr>
+  <tr><td>审核流程</td><td>272 ~ 321</td><td>步骤条、上传区、链接列表</td></tr>
+</table>
+
+<h3>核心动画一览</h3>
+<table>
+  <tr><th><span class="badge badge-anim">动画</span></th><th>用途</th><th>关键帧</th></tr>
+  <tr><td><code>fadeIn</code></td><td>页面切换</td><td>opacity + translateY</td></tr>
+  <tr><td><code>pubToastIn</code></td><td>Toast 提示</td><td>opacity + translateY</td></tr>
+  <tr><td><code>pubSuccessPop</code></td><td>成功提示弹出</td><td>scale(0.5→1.15→1)</td></tr>
+  <tr><td><code>pubOverlayIn/Out</code></td><td>遮罩淡入淡出</td><td>opacity</td></tr>
+  <tr><td><code>pubCardIn</code></td><td>卡片弹出</td><td>translateY+scale 弹性</td></tr>
+  <tr><td><code>pubHeaderGlow</code></td><td>头部光晕</td><td>scale+rotate 旋转光</td></tr>
+  <tr><td><code>pubRocketShake</code></td><td>火箭抖动</td><td>translateY+rotate</td></tr>
+  <tr><td><code>pubProgressShine</code></td><td>进度条流光</td><td>translateX 扫光</td></tr>
+  <tr><td><code>pubOcSpin</code></td><td>加载旋转</td><td>rotate(360deg)</td></tr>
+  <tr><td><code>pubCheckPop</code></td><td>勾选弹出</td><td>scale 弹性</td></tr>
+  <tr><td><code>pubDoneBounce</code></td><td>完成图标弹跳</td><td>scale+rotate</td></tr>
+  <tr><td><code>pubConfettiFall</code></td><td>五彩纸屑</td><td>translateY+rotate 下落</td></tr>
+  <tr><td><code>rvPulse</code></td><td>审核步骤脉冲</td><td>box-shadow 扩散</td></tr>
+  <tr><td><code>rvSpin</code></td><td>审核加载旋转</td><td>rotate(360deg)</td></tr>
+</table>
+
+<!-- ===== 4. HTML 页面结构 ===== -->
+<h2 id="html">4. HTML 页面结构</h2>
+
+<pre><code>&lt;body&gt;
+├── &lt;div class="app"&gt;                     ← 全局 flex 容器
+│   ├── &lt;aside class="sidebar"&gt;             ← 侧边栏
+│   │   ├── .sidebar-logo                    ← Logo + 品牌名
+│   │   ├── .sidebar-nav                      ← 导航菜单
+│   │   │   ├── .nav-section "Geral"          ← 仪表盘、内容
+│   │   │   ├── .nav-section "Distribuicao"   ← 发布、审核、排期
+│   │   │   └── .nav-section "Analytics"      ← 数据、媒体
+│   │   └── .sidebar-footer                   ← 用户信息
+│   │
+│   └── &lt;main class="main"&gt;                 ← 主区域
+│       ├── .topbar                           ← 顶栏
+│       │   ├── .topbar-breadcrumb            ← 面包屑
+│       │   └── .topbar-actions              ← 搜索 + 通知
+│       │
+│       └── .content                           ← 内容区
+│           ├── #page-dashboard               ← 仪表盘
+│           ├── #page-publish                 ← 发布页
+│           ├── #page-revisao                 ← 审核页
+│           ├── #page-accounts                ← 账号管理
+│           ├── #page-data                    ← 数据分析
+│           ├── #page-schedule                ← 定时排期
+│           └── #page-material                ← 媒体库
+│
+├── &lt;!-- 发布效果遮罩 (JS 动态创建) --&gt;
+├── &lt;!-- 审核弹窗 --&gt;
+├── &lt;!-- Toast 提示 --&gt;
+└── &lt;script&gt; ... &lt;/script&gt;
+&lt;/body&gt;</code></pre>
+
+<!-- ===== 5. 6 大功能页面 ===== -->
+<h2 id="pages">5. 6 大功能页面</h2>
+
+<div class="card">
+  <h3>📊 1. 仪表盘 (Dashboard)</h3>
+  <p>欢迎栏 + 4 个快捷操作卡 + 4 个统计卡片（收入/转化/触达/CPM）+ 柱状图 + 平台分布 + 活动时间线。展示运营全局概览。</p>
+</div>
+
+<div class="card">
+  <h3>🚀 2. 发布页 (Publish) — 核心</h3>
+  <p>三列布局：<strong>左列编辑器</strong>（标题输入、内容文本域、格式工具栏、媒体上传、快捷标签）+ <strong>中列预览</strong>（8 平台 Tab 切换预览）+ <strong>右列平台选择</strong>（8 个平台卡片、一键分发按钮、内容素材库）。</p>
+  <p>支持 8 个平台的实时预览，每个平台有独立的预览样式。底部嵌入内容素材库（3 个分类标签页：多平台分发、巴西汽车出海、短句素材）。</p>
+</div>
+
+<div class="card">
+  <h3>✅ 3. 合规审核 (Revisão)</h3>
+  <p>4 步审核流程可视化（上传内容 → AI 检测 → 人工确认 → 完成发布），支持图片/视频上传预览、外部链接添加、合规检测项勾选。</p>
+</div>
+
+<div class="card">
+  <h3>👥 4. 账号管理 (Accounts)</h3>
+  <p>8 个平台账号卡片网格，展示平台名、Handle、粉丝数、发布数、状态（已连接/未连接）。</p>
+</div>
+
+<div class="card">
+  <h3>📈 5. 数据分析 (Data)</h3>
+  <p>4 个统计卡片 + 平台数据表格（粉丝/互动率/转化率/收入）+ 数据概览面板。</p>
+</div>
+
+<div class="card">
+  <h3>📅 6. 定时排期 (Schedule)</h3>
+  <p>月历视图 + 待发布列表，支持日历单元格点击、发布时间设置、重复频率选择。数据通过 localStorage 持久化。</p>
+</div>
+
+<!-- ===== 6. 发布系统核心 ===== -->
+<h2 id="publish">6. 发布系统核心</h2>
+
+<h3>平台选择机制</h3>
+<pre><code>// 平台元数据 - 每个平台的图标、颜色、Handle
+var pubPlatformMeta = {
+  instagram: { name:'Instagram', bg:'linear-gradient(135deg,#E1306C,#C13584)', icon:'I', handle:'@techpro_brasil' },
+  facebook:  { name:'Facebook',  bg:'#1877F2', icon:'F', handle:'TechPro Brasil' },
+  tiktok:    { name:'TikTok',    bg:'#000', icon:'T', handle:'@techpro.br' },
+  youtube:   { name:'YouTube',   bg:'#FF0000', icon:'Y', handle:'TechPro Brasil' },
+  linkedin:  { name:'LinkedIn',  bg:'#0A66C2', icon:'L', handle:'TechPro Brasil' },
+  twitter:   { name:'Twitter/X', bg:'#1DA1F2', icon:'X', handle:'@TechProBR' },
+  pinterest: { name:'Pinterest', bg:'#E60023', icon:'P', handle:'TechPro Brasil' },
+  whatsapp:  { name:'WhatsApp',  bg:'#25D366', icon:'W', handle:'Canal TechPro' }
+};
+
+// 已选平台数组
+var pubSelectedPlatforms = [];
+
+// 点击切换选择
+function pubToggleSidePlatform(el) {
+  el.classList.toggle('selected');
+  // ...添加/移除到 pubSelectedPlatforms
+  pubUpdateSidebarUI();
+  pubUpdateStats();
+}</code></pre>
+
+<h3>分发流程</h3>
+<ol>
+  <li>用户在编辑器中输入内容 + 选择目标平台</li>
+  <li>点击「Distribuir Agora」按钮触发 <code>pubDistributeAll()</code></li>
+  <li>校验内容非空 + 平台已选</li>
+  <li>调用 <code>pubShowPublishEffect()</code> 启动动画</li>
+  <li>动画完成后显示成功提示 + 重置表单</li>
+</ol>
+
+<!-- ===== 7. 分发成功动画详解 ===== -->
+<h2 id="animation">7. 分发成功动画详解</h2>
+
+<div class="callout">
+  🎬 这是整个网页最精彩的动画效果，已在独立文件 <code>分发成功动画-独立预览.html</code> 中单独提取。包含 <strong>12 个 CSS 动画</strong>和<strong>完整的 JS 动画编排逻辑</strong>。
+</div>
+
+<h3>动画结构（从外到内）</h3>
+<pre><code>pub-overlay (全屏遮罩)
+└── pub-overlay-card (白色卡片)
+    ├── pub-oc-header (深蓝渐变头部)
+    │   ├── pub-oc-rocket 🚀 (火箭图标，持续抖动)
+    │   ├── pub-oc-title (标题文字)
+    │   └── pub-oc-subtitle (副标题)
+    │   └── ::before (旋转光晕背景)
+    │
+    ├── pub-oc-body (主体)
+    │   ├── pub-oc-progress-wrap (进度条)
+    │   │   ├── pub-oc-progress-label + pub-oc-progress-pct
+    │   │   └── pub-oc-progress-track > pub-oc-progress-fill
+    │   │       └── ::after (流光扫过效果)
+    │   │
+    │   └── pub-oc-platforms (平台列表)
+    │       └── pub-oc-platform × N
+    │           ├── pub-oc-p-icon (平台图标)
+    │           ├── pub-oc-p-info (名称 + 状态文字)
+    │           ├── pub-oc-p-spinner (旋转加载圈)
+    │           └── pub-oc-p-check (绿色✓)
+    │
+    └── pub-oc-footer (底部完成区，动画完成后显示)
+        ├── pub-oc-done-icon ✅
+        ├── pub-oc-done-text "发布完成！"
+        ├── pub-oc-done-sub
+        └── pub-oc-close-btn
+
+pub-confetti-container (五彩纸屑，全屏覆盖层)</code></pre>
+
+<h3>动画时序编排</h3>
+<table>
+  <tr><th>时间</th><th>事件</th><th>CSS 动画</th></tr>
+  <tr><td>0ms</td><td>遮罩出现</td><td><code>pubOverlayIn</code> (0.3s 淡入)</td></tr>
+  <tr><td>0ms</td><td>卡片弹出</td><td><code>pubCardIn</code> (0.4s 弹性上移)</td></tr>
+  <tr><td>0ms~</td><td>火箭持续抖动</td><td><code>pubRocketShake</code> (0.5s 循环)</td></tr>
+  <tr><td>0ms~</td><td>头部光晕旋转</td><td><code>pubHeaderGlow</code> (3s 循环)</td></tr>
+  <tr><td>0ms~</td><td>进度条流光</td><td><code>pubProgressShine</code> (1.5s 循环)</td></tr>
+  <tr><td>600ms</td><td>第一个平台开始发布</td><td>—</td></tr>
+  <tr><td>600ms~</td><td>平台发布中状态</td><td><code>pubOcSpin</code> 旋转圈</td></tr>
+  <tr><td>每平台 1500ms</td><td>5 步状态更新（连接→发送→处理→验证→发布）</td><td>—</td></tr>
+  <tr><td>每平台完成</td><td>标记 done，显示绿色✓</td><td><code>pubCheckPop</code> (0.4s 弹性)</td></tr>
+  <tr><td>全部完成</td><td>进度条 100%</td><td>—</td></tr>
+  <tr><td>+0ms</td><td>发射五彩纸屑（80 片）</td><td><code>pubConfettiFall</code> (1.8~4.3s 随机)</td></tr>
+  <tr><td>+400ms</td><td>底部完成区滑入</td><td><code>pubFooterIn</code> (0.4s)</td></tr>
+  <tr><td>+400ms</td><td>火箭变✅，弹跳旋转</td><td><code>pubDoneBounce</code> (0.5s)</td></tr>
+</table>
+
+<h3>五彩纸屑实现</h3>
+<pre><code>function pubLaunchConfetti() {
+  var container = document.createElement('div');
+  container.className = 'pub-confetti-container';
+  document.body.appendChild(container);
+
+  var colors = ['#bfa46f','#1a3a5c','#2d9d78','#d4943a',
+                '#7c5bba','#d4504e','#0a8db3','#E1306C',
+                '#1877F2','#25D366'];
+  var pieces = 80;
+
+  for (var i = 0; i < pieces; i++) {
+    var piece = document.createElement('div');
+    piece.className = 'pub-confetti-piece';
+    // 随机位置、颜色、大小、形状、时长、延迟
+    piece.style.left = Math.random()*100 + '%';
+    piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+    piece.style.width = (6+Math.random()*8) + 'px';
+    piece.style.height = (6+Math.random()*8) + 'px';
+    piece.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
+    piece.style.animationDuration = (1.8+Math.random()*2.5) + 's';
+    piece.style.animationDelay = (Math.random()*0.6) + 's';
+    container.appendChild(piece);
+  }
+
+  // 5 秒后自动清理
+  setTimeout(function() {
+    if (container.parentNode) container.remove();
+  }, 5000);
+}</code></pre>
+
+<!-- ===== 8. 内容素材库 ===== -->
+<h2 id="content">8. 内容素材库系统</h2>
+
+<p>发布页底部嵌入了一个完整的内容素材库，包含 3 个分类标签页：</p>
+
+<table>
+  <tr><th>标签页</th><th>内容</th><th>素材数量</th></tr>
+  <tr><td>🚀 多平台分发 & 裂变</td><td>15 标题 + 5 短文案 + 3 长方案</td><td>23 条</td></tr>
+  <tr><td>🚗 巴西汽车出海 (中葡)</td><td>12 双语标题 + 4 短视频文案 + 2 PPT 长文案</td><td>18 条</td></tr>
+  <tr><td>💬 短句素材</td><td>10 条超简短宣传句 (15-25字)</td><td>10 条</td></tr>
+</table>
+
+<p>每条素材支持两种操作：<strong>复制</strong>（复制到剪贴板 + Toast 提示）和 <strong>插入编辑器</strong>（直接填入发布编辑器的内容区域）。数据全部内嵌在 <code>clibData</code> 对象中，无需后端。</p>
+
+<h3>快捷标签系统</h3>
+<p>编辑器顶部还有两组快捷标签（标题快捷选择 + 内容快捷选择），点击后通过下拉面板展示对应分类的素材列表，选择后自动填入。</p>
+
+<!-- ===== 9. 定时发布 ===== -->
+<h2 id="schedule">9. 定时发布与日历</h2>
+
+<h3>日历组件</h3>
+<p>月历视图，每个日期单元格支持三种状态：<code>today</code>（今天，高亮）、<code>has-posts</code>（有排期，金棕边框）、普通日期。点击日期可添加排期。</p>
+
+<h3>数据持久化</h3>
+<pre><code>var schScheduledPosts = []; // 排期数组
+var SCH_KEY = 'sch_posts';   // localStorage 键名
+
+function schSavePosts() {
+  localStorage.setItem(SCH_KEY, JSON.stringify(schScheduledPosts));
+}
+
+function schLoadPosts() {
+  try {
+    var raw = localStorage.getItem(SCH_KEY);
+    if (raw) schScheduledPosts = JSON.parse(raw) || [];
+  } catch(e) { schScheduledPosts = []; }
+}</code></pre>
+
+<p>首次打开时如果没有排期数据，会自动生成 6 条演示数据（Instagram/TikTok/LinkedIn/Facebook/Twitter/YouTube 各一条），覆盖今天、明天和后天。</p>
+
+<!-- ===== 10. 总结 ===== -->
+<hr>
+<h2 id="summary">10. 技术亮点总结</h2>
+
+<div class="card">
+  <ol>
+    <li><strong>零依赖单文件</strong> — 2982 行全部内联，仅外链 Google Fonts，双击即可运行</li>
+    <li><strong>12 个精心编排的 CSS 动画</strong> — 从遮罩淡入到火箭抖动、进度流光、勾选弹跳、五彩纸屑，层层递进</li>
+    <li><strong>8 平台实时预览</strong> — 每个平台有独立预览样式，内容输入即时同步</li>
+    <li><strong>媒体上传</strong> — 支持图片/视频拖拽上传，FileReader 读取为 Data URL 预览</li>
+    <li><strong>内容素材库</strong> — 51 条预制文案，支持复制/插入编辑器，3 个分类标签页</li>
+    <li><strong>定时排期 + localStorage</strong> — 月历视图 + 排期数据持久化，自动种子演示数据</li>
+    <li><strong>4 步审核流程</strong> — 步骤条可视化 + 脉冲动画 + 合规检测项</li>
+    <li><strong>响应式设计</strong> — <code>@media(max-width:1200px)</code> 断点适配</li>
+    <li><strong>葡萄牙语 + 中文</strong> — 面向巴西市场的双语界面设计</li>
+    <li><strong>金棕+深蓝商务配色</strong> — 高端 SaaS 后台视觉风格</li>
+  </ol>
+</div>
+
+<div class="callout">
+  📦 本打包文件夹包含：<br>
+  1. <code>发布平台(1).html</code> — 源 HTML 文件（完整版）<br>
+  2. <code>分发成功动画-独立预览.html</code> — 分发动画独立版（可直接打开体验）<br>
+  3. <code>技术文档-发布平台详解.html</code> — 本技术文档
+</div>
+
+</div>
+</body>
+</html>
