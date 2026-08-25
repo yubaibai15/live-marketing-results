@@ -4,6 +4,7 @@ import App from "./App";
 import "./clean.css";
 import "./knowledge.css";
 import "./result-search.css";
+import "./original-home.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode><App /></StrictMode>,

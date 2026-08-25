@@ -3,15 +3,15 @@ import { ArrowRight } from "lucide-react";
 export type PublicPage = "home" | "capabilities" | "solutions" | "cases" | "resources" | "about";
 
 const copy = {
-  name: "\u6c7d\u8f66\u589e\u957f\u7b56\u7565\u667a\u80fd\u4f53",
-  kicker: "AI \u9a71\u52a8\u7684\u6c7d\u8f66\u589e\u957f\u51b3\u7b56\u5e73\u53f0",
-  headline: "\u8ba9\u589e\u957f\u51b3\u7b56\n\u5efa\u7acb\u5728\u53ef\u9a8c\u8bc1\u7684\u6570\u636e\u4e0a",
-  intro: "\u8fde\u63a5\u5e02\u573a\u3001\u7528\u6237\u4e0e\u7ecf\u8425\u6570\u636e\uff0c\u4ece\u6d1e\u5bdf\u3001\u7b56\u7565\u5230\u6267\u884c\uff0c\u8ba9\u6bcf\u4e00\u6b21\u6c7d\u8f66\u589e\u957f\u51b3\u7b56\u90fd\u6709\u6839\u636e\u3002",
-  enter: "\u8fdb\u5165\u7b56\u7565\u5de5\u4f5c\u53f0",
-  login: "\u767b\u5f55", trial: "\u5f00\u59cb\u4f53\u9a8c",
-  proofA: "\u4e09\u7c7b\u589e\u957f\u7b56\u7565", proofB: "\u56db\u7c7b\u6570\u636e\u5165\u53e3", proofC: "\u7ed3\u679c\u53ef\u89e3\u91ca",
-  desk: "\u589e\u957f\u7b56\u7565\u5de5\u4f5c\u53f0", online: "\u5728\u7ebf",
-  leads: "\u9500\u552e\u7ebf\u7d22\u589e\u957f", conversion: "\u8bd5\u9a7e\u8f6c\u5316\u7387", lifetimeValue: "\u5355\u5ba2\u751f\u547d\u5468\u671f\u4ef7\u503c",
+  name: "直播营销策划智能体",
+  kicker: "DEEPSEEK V4 FLASH 驱动的直播营销策划平台",
+  headline: "让每一次直播策划\n建立在可执行的内容上",
+  intro: "连接巴西市场知识库、直播脚本、营销日历与发布平台；从策划洞察到直播执行，直接得到可使用的成果。",
+  enter: "进入直播营销工作台",
+  login: "项目资料", trial: "开始体验",
+  proofA: "直播策略对话", proofB: "六类项目知识库", proofC: "成果一键打开",
+  desk: "直播营销策划工作台", online: "DeepSeek 已就绪",
+  leads: "目标观看人数", conversion: "平均互动率", lifetimeValue: "有效线索目标",
 } as const;
 
 const nav: Array<[Exclude<PublicPage, "home">, string]> = [

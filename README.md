@@ -14,7 +14,10 @@
 LLM_API_KEY=你的 DeepSeek API Key
 LLM_BASE_URL=https://api.deepseek.com
 LLM_MODEL=deepseek-v4-flash
+CHAT_RATE_LIMIT_PER_HOUR=20
 ```
+
+最后一项用于限制单一访问来源每小时可提问次数，避免公共网站被滥用而消耗你的模型额度；可按需要调整。
 
 输入“发布平台”“直播脚本策划 xmind”等已有资料时，页面会自动打开对应内容；其他普通问题会发送给 DeepSeek V4 Flash 回答。
 
