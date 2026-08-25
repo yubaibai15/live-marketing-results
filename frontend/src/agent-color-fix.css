@@ -1,0 +1,10 @@
+/* Keep the dark agent-status card readable after the original UI stylesheet loads. */
+.desk .session{background:#112946;border-color:#274c78}
+.desk .session b{color:#a7c6ef}
+.desk .session b em{background:#35d49a;box-shadow:0 0 0 4px rgba(53,212,154,.12)}
+.desk .session strong{color:#f4f8ff!important}
+.desk .session p{color:#b9cbe2!important}
+.desk .abilities h2{color:#6d88ad}
+.desk .ability strong{color:#17345b}
+.desk .ability p{color:#7391ba}
+.desk .data-note{color:#c7dcfb;background:#14335d;border-left-color:#4e91ff}

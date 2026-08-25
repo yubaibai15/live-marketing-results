@@ -5,6 +5,7 @@ import "./clean.css";
 import "./knowledge.css";
 import "./result-search.css";
 import "./original-home.css";
+import "./agent-color-fix.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode><App /></StrictMode>,
